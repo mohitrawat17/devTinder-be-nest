@@ -24,10 +24,8 @@ import { AuthModule } from './auth/auth.module';
       synchronize: process.env.DB_SYNC === 'true', // auto-create tables in dev
       logging: process.env.DB_LOGGING === 'true' ? console.log : false,
     }),
-
-    AuthModule,
-
-    // UsersModule, etc
+    UsersModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

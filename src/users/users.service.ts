@@ -1,42 +1,21 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { User } from './users.model';
 
 @Injectable()
 export class UsersService {
-    private users = [
-        {
-            id: 1,
-            name: "Mohit Rawat",
-            role: "admin",
-            email: "mohit@example.com"
-        },
-        {
-            id: 2,
-            name: "Aarav Sharma",
-            role: "user",
-            email: "aarav@example.com"
-        },
-        {
-            id: 3,
-            name: "Priya Verma",
-            role: "user",
-            email: "priya@example.com"
-        },
-        {
-            id: 4,
-            name: "Rohan Gupta",
-            role: "admin",
-            email: "rohan@example.com"
-        },
-        {
-            id: 5,
-            name: "Neha Singh",
-            role: "user",
-            email: "neha@example.com"
-        }
-    ];
+    constructor(
+        @InjectModel(User) 
+        private userModel: typeof User,
+    ) { }
 
-    private findAll(page,limit) {
-        
+    async findAll(page: number, limit: number) {
+        const offset = (page - 1) * limit;
+        const data = await this.userModel.findAndCountAll({
+            limit,
+            offset,
+        });
+
+        return data
     }
-
 }
