@@ -10,6 +10,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/users/users.model';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -47,35 +48,32 @@ export class AuthService {
     return this.omitPassword(user);
   }
 
-//   async validateUser(emailId: string, password: string): Promise<User> {
-//     const user = await this.userModel.findOne({ where: { emailId } });
-//     if (!user) {
-//       throw new UnauthorizedException('Invalid credentials');
-//     }
+  async validateUser(emailId: string, password: string): Promise<User> {
+    const user = await this.userModel.findOne({ where: { emailId } });
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const isValid = await bcrypt.compare(password, user.dataValues.password);
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-//     const isValid = await bcrypt.compare(password, user.password);
-//     if (!isValid) {
-//       throw new UnauthorizedException('Invalid credentials');
-//     }
+    return user;
+  }
 
-//     return user;
-//   }
+  async login(LoginDto: LoginDto) {
+    const { emailId, password } = LoginDto;
+    const user = await this.validateUser(emailId, password)
+    const payload = { sub: user.id, emailId: user.emailId };
+    const token = await this.jwtService.signAsync(payload, {
+      // optional: override options here or configure globally in JwtModule
+      expiresIn: '1d',
+    });
 
-//   async login(loginDto: LoginDto) {
-//     const { emailId, password } = loginDto;
-//     const user = await this.validateUser(emailId, password);
-
-//     const payload = { sub: user.id, emailId: user.emailId };
-
-//     const token = await this.jwtService.signAsync(payload, {
-//       // optional: override options here or configure globally in JwtModule
-//       expiresIn: '1d',
-//     });
-
-//     return {
-//       message: 'Logged in successfully!',
-//       token,
-//       user: this.omitPassword(user),
-//     };
-//   }
+    return {
+      message: 'Logged in successfully!',
+      token,
+      user: this.omitPassword(user),
+    };
+  }
 }
