@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './users.model';
 
+interface AuthenticatedRequest extends Request {
+  user: any;
+}
+
 @Injectable()
 export class UsersService {
     constructor(
-        @InjectModel(User) 
+        @InjectModel(User)
         private userModel: typeof User,
     ) { }
 
@@ -17,5 +21,11 @@ export class UsersService {
         });
 
         return data
+    }
+
+    async findById(id: string, req:AuthenticatedRequest) {
+     console.log('req',req.user)
+
+    return {};
     }
 }
