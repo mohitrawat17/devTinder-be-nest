@@ -5,12 +5,15 @@ import {
     DataType,
     Unique,
     AllowNull,
+    PrimaryKey,
+    Default,
 } from 'sequelize-typescript';
 import { Gender } from 'src/auth/auth.enums';
 import { Optional } from 'sequelize';
 
 // 1) Attributes that exist in the DB / on the instance
 export interface UserAttributes {
+    id: string;
     firstName: string;
     lastName?: string | null;
     emailId: string;
@@ -21,9 +24,10 @@ export interface UserAttributes {
     skills?: string[] | null;
 }
 
+
 export type UserCreationAttributes = Optional<
     UserAttributes,
-    'lastName' | 'age' | 'gender' | 'photo' | 'skills'
+    'id' | 'lastName' | 'age' | 'gender' | 'photo' | 'skills'
 >;
 
 
@@ -34,6 +38,14 @@ export type UserCreationAttributes = Optional<
 export class User
     extends Model<UserAttributes, UserCreationAttributes>
     implements UserAttributes {
+
+    @PrimaryKey
+    @Default(DataType.UUIDV4)
+    @Column({
+        type: DataType.UUID,
+    })
+    declare id: string;
+
 
     @AllowNull(false)
     @Column({

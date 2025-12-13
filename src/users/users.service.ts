@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from './users.model';
+import { User, UserAttributes } from './users.model';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 interface AuthenticatedRequest extends Request {
-  user: any;
+    user: any;
 }
 
 @Injectable()
@@ -23,9 +24,34 @@ export class UsersService {
         return data
     }
 
-    async findById(id: string, req:AuthenticatedRequest) {
-     console.log('req',req.user)
+    async findById(id: string) {
+        const user = await this.userModel.findByPk(id, {
+            attributes: { exclude: ['password'] },
+        });
 
-    return {};
+        if (!user) {
+            throw new NotFoundException('No user found');
+        }
+        return user
+    }
+
+    async updateById(updateUserDto: UpdateUserDto, req: any) {
+        const { id } = req.user
+
+        const [updatedCount, rows] = await this.userModel.update(updateUserDto, {
+            where: { id: id as any },
+            returning: true,
+            individualHooks: true,
+        });
+
+        if (updatedCount === 0) {
+            throw new NotFoundException('User not found');
+        }
+
+        const updatedUser = rows[0];
+
+        const { password, ...safeUser } = updatedUser.get({ plain: true });
+
+        return { message: 'User updated successfully!', data: safeUser };
     }
 }
